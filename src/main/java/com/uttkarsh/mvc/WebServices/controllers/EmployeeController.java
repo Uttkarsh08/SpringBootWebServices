@@ -13,11 +13,11 @@ public class EmployeeController {
 
 
     @GetMapping("/{employeeID}") //GetMapping for get Request
-    public EmployeeDTO getEmployeeById(@PathVariable Long employeeID) { //PathVariable so, that the parameter is treated as a path for GetMapping.
+    public EmployeeDTO getEmployeeById(@PathVariable(name = "employeeID") Long id) { //PathVariable so, that the parameter is treated as a path for GetMapping.
         //also, PathVariable is used when the path in URL is fixed(Mandatory to pass). Otherwise we use @RequestParam
         //localhost:8080/employees/1
         return new EmployeeDTO(
-                employeeID,
+                id,
                 "Uttkarsh",
                 "ut@gmail.com",
                 20,
@@ -27,7 +27,7 @@ public class EmployeeController {
     }
 
 
-    @GetMapping  //we removed path from her
+    @GetMapping  //we removed path from here, because we are using request Mapping in parent function
     public String getAllEmployees(@RequestParam(required = false) Integer age,
                                   @RequestParam(required = false) String sortBy
                                   ){
