@@ -3,6 +3,7 @@ package com.uttkarsh.mvc.WebServices.controllers;
 
 import com.uttkarsh.mvc.WebServices.dto.EmployeeDTO;
 import com.uttkarsh.mvc.WebServices.services.EmployeeServices;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,13 +45,13 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO inputEmployee) {  //RequestBody maps HTTPS POST requests to parameters
-        EmployeeDTO createdEmployee =  employeeService.createEmployee(inputEmployee);
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid  EmployeeDTO inputEmployee) {  //RequestBody maps HTTPS POST requests to parameters, ?Valid to tell controller to validate the parameter
+        EmployeeDTO createdEmployee = employeeService.createEmployee(inputEmployee);
         return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/{employeeID}")
-    public ResponseEntity<EmployeeDTO> updateEmployee(@RequestBody EmployeeDTO employeeDTO, @PathVariable(name = "employeeID") Long id){
+    public ResponseEntity<EmployeeDTO> updateEmployee(@RequestBody @Valid EmployeeDTO employeeDTO, @PathVariable(name = "employeeID") Long id){
         return ResponseEntity.ok(employeeService.updateEmployeeById(id, employeeDTO));
     }
 
