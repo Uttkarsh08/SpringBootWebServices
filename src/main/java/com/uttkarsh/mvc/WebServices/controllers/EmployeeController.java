@@ -2,6 +2,7 @@ package com.uttkarsh.mvc.WebServices.controllers;
 
 
 import com.uttkarsh.mvc.WebServices.dto.EmployeeDTO;
+import com.uttkarsh.mvc.WebServices.exceptions.ResourceNotFoundException;
 import com.uttkarsh.mvc.WebServices.services.EmployeeServices;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -23,16 +25,17 @@ public class EmployeeController {
     }
 
 
-//similarly, employeeEntity should not be used directly inside the controllers, in between there should be a service layer
+//employeeEntity should not be used directly inside the controllers, in between there should be a service layer
     @GetMapping("/{employeeID}") //GetMapping for get Request
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable(name = "employeeID") Long id) { //PathVariable so, that the parameter is treated as a path for GetMapping.
         //also, PathVariable is used when the path in URL is fixed(Mandatory to pass). Otherwise we use @RequestParam
         //localhost:8080/employees/1
         Optional<EmployeeDTO> employeeDTO =  employeeService.getEmployeeById(id);
-        return employeeDTO
-                .map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
-                .orElse(ResponseEntity.notFound().build());
+        return employeeDTO.map(
+                employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
+                .orElseThrow(() -> new ResourceNotFoundException("Employee Doesn't Exist with id: "+id));
     }
+
 
 
     @GetMapping  //we removed path from here, because we are using request Mapping in parent function

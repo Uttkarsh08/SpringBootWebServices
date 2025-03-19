@@ -2,6 +2,7 @@ package com.uttkarsh.mvc.WebServices.services;
 
 import com.uttkarsh.mvc.WebServices.dto.EmployeeDTO;
 import com.uttkarsh.mvc.WebServices.entities.EmployeeEntity;
+import com.uttkarsh.mvc.WebServices.exceptions.ResourceNotFoundException;
 import com.uttkarsh.mvc.WebServices.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.util.ReflectionUtils;
@@ -24,19 +25,18 @@ public class EmployeeServices {
         this.mapper = mapper;
     }
 
-//    public EmployeeDTO getEmployeeById(Long id) {
-//        EmployeeEntity employeeEntity =  employeeRepository.findById(id).orElse(null);
-//
-//        return mapper.map(employeeEntity, EmployeeDTO.class);
-//    }
 
     public Optional<EmployeeDTO> getEmployeeById(Long id) {
-//        Optional<EmployeeEntity> employeeEntity =  employeeRepository.findById(id);
-//        return employeeEntity.map(entity-> mapper.map(entity, EmployeeDTO.class));
+        isExistsByEmployeeId(id);
+
+        Optional<EmployeeEntity> employeeEntity = employeeRepository.findById(id);
+        return employeeEntity.map(
+                entity->mapper.map(entity, EmployeeDTO.class));
 
         //OR
 
-        return employeeRepository.findById(id).map(employeeEntity -> mapper.map(employeeEntity, EmployeeDTO.class));
+//      return employeeRepository.findById(id)
+//        .map(employeeEntity -> mapper.map(employeeEntity, EmployeeDTO.class));
     }
 
     public List<EmployeeDTO> getAllEmployees() {
@@ -57,6 +57,8 @@ public class EmployeeServices {
     }
 
     public EmployeeDTO updateEmployeeById(Long id, EmployeeDTO employeeDTO) {
+        isExistsByEmployeeId(id);
+
         EmployeeEntity employeeEntity = mapper.map(employeeDTO, EmployeeEntity.class);
         employeeEntity.setId(id);
 
@@ -65,18 +67,18 @@ public class EmployeeServices {
     }
 
     public boolean deleteEmployeeById(Long id) {
-        boolean exists = isExistsByEmployeeId(id);
-        if(!exists) return false;
+        isExistsByEmployeeId(id);
+
         employeeRepository.deleteById(id);
         return true;
     }
 
     public EmployeeDTO updatePartialEmployeeById(Long id, Map<String, Object> updates) {
-        boolean exists = isExistsByEmployeeId(id);
-        if(!exists) return null;
+        isExistsByEmployeeId(id);
+
         EmployeeEntity employeeEntity = employeeRepository.findById(id).get();  //get the entity(by id) of the employee to update
-        updates.forEach((filed, value) -> {
-            Field filedToUpdate = ReflectionUtils.findRequiredField(EmployeeEntity.class, filed);  //use reflection to update the required fileds
+        updates.forEach((field, value) -> {
+            Field filedToUpdate = ReflectionUtils.findRequiredField(EmployeeEntity.class, field);  //use reflection to update the required fields
             filedToUpdate.setAccessible(true);
             ReflectionUtils.setField(filedToUpdate, employeeEntity, value);
         });
@@ -84,7 +86,8 @@ public class EmployeeServices {
         return mapper.map(savedEntity, EmployeeDTO.class);  //return the DTO using mapper
     }
 
-    public boolean isExistsByEmployeeId(Long employeeId) {
-        return employeeRepository.existsById(employeeId);
+    public void isExistsByEmployeeId(Long employeeId) {
+        boolean exist = employeeRepository.existsById(employeeId);
+        if(!exist) throw new ResourceNotFoundException("Employee doesn't Exist with id: "+employeeId);
     }
 }
